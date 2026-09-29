@@ -219,5 +219,41 @@ const SUPABASE_KEY = "sb_publishable_IB-q0Y-1TLnzQDs5_L9ejg_pfTxt21m";
   }
 }
 
+
+async function loadSchedulesFromSupabase() {
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/schedules?select=*&order=created_at.desc",
+      {
+        method: "GET",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    const rows = await response.json();
+
+    const schedules = rows.map(row => {
+      if (row.schedule_data && typeof row.schedule_data === "object") {
+        return row.schedule_data;
+      }
+      return row;
+    });
+
+    localStorage.setItem("wrbSchedules", JSON.stringify(schedules));
+    renderSaved();
+    renderCalendar();
+    return true;
+  } catch (err) {
+    console.error("Supabase load failed:", err);
+    return false;
+  }
+}
 </script>
 </body></html>
